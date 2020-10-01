@@ -6,7 +6,7 @@ $(document).ready(function () {
 
 
 function weatherSearch(city) {
-    var queryURL = "http://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=metric&appid=fa83f868b44583cfef9d1a24e9512db4";
+    var queryURL = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=metric&appid=fa83f868b44583cfef9d1a24e9512db4";
     $.ajax({
         url: queryURL,
         method: "GET",
@@ -34,7 +34,7 @@ function weatherSearch(city) {
 };
 
 function fiveDayandUVSearch(lon, lat) {
-    var queryURL = "http://api.openweathermap.org/data/2.5/onecall?lon=" + lon + "&lat=" + lat + "&units=metric&exclude=hourly,minutely,alerts&appid=fa83f868b44583cfef9d1a24e9512db4";
+    var queryURL = "https://api.openweathermap.org/data/2.5/onecall?lon=" + lon + "&lat=" + lat + "&units=metric&exclude=hourly,minutely,alerts&appid=fa83f868b44583cfef9d1a24e9512db4";
     console.log(queryURL);
     $.ajax({
         url: queryURL,
@@ -77,7 +77,7 @@ function fiveDayandUVSearch(lon, lat) {
 
             const imgIcon = $("<img>");
             var currentWeatherCode = response.daily[i].weather[0].icon;
-            imgIcon.attr("src", "http://openweathermap.org/img/wn/" + currentWeatherCode + ".png")
+            imgIcon.attr("src", "https://openweathermap.org/img/wn/" + currentWeatherCode + ".png")
             const pTemp = $("<p>");
             pTemp.text("Temp: " + response.daily[i].temp.max.toFixed(1) + "°C");
             const pHumidity = $("<p>");
