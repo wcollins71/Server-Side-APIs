@@ -18,7 +18,7 @@ function weatherSearch(city) {
     }).then(function (response) {
         $("#cityAndDate").text(response.name + " " + new Date().toLocaleDateString("en-GB"));
         var currentWeatherCode = response.weather[0].icon;
-        $("#currentWeatherIcon").attr("src", "http://openweathermap.org/img/wn/" + currentWeatherCode + ".png")
+        $("#currentWeatherIcon").attr("src", "https://openweathermap.org/img/wn/" + currentWeatherCode + ".png")
         var currentTemp = response.main.temp;
         $("#currentTemp").text("Temperature: " + currentTemp.toFixed(1) + "°C");
         var currentHumidity = response.main.humidity;
