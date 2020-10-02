@@ -2,11 +2,24 @@ $(document).ready(function () {
     console.clear();
     $("#mainPanel").hide();
     $("#cityNotFound").hide();
+    loadCities();
     $("#cityTextSearch").focus().select();
 });
 
 var currentDate = ""
+var citiesSearched = [];
 
+function loadCities() {
+    citiesSearched = JSON.parse(localStorage.getItem("city"));
+    console.log(citiesSearched);
+    for (var i = 0; i < citiesSearched.length; i++) {
+        const $buttonGroup = $("#btnGroup");
+        const $button = $("<button>");
+        $button.attr("class", "btn btn-light btnCity");
+        $button.text(citiesSearched[i]);
+        $buttonGroup.append($button);
+    };
+};
 function weatherSearch(city) {
     var queryURL = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=metric&appid=fa83f868b44583cfef9d1a24e9512db4";
     $.ajax({
@@ -124,9 +137,10 @@ function addToCityList(city) {
     // check if city is already in list before adding to the list
     if (!$("button:contains('" + city + "')").length) {
         $button.attr("class", "btn btn-light btnCity");
-        $button.attr("id", city);
         $button.text(city);
-        $buttonGroup.prepend($button);
+        $buttonGroup.append($button);
+        citiesSearched.push(city);
+        localStorage.setItem("city", JSON.stringify(citiesSearched));
     } else {
 
     }
@@ -160,4 +174,4 @@ $("#btnGroup").on("click", ".btnCity", function (event) {
     var city = $(this).text();
     weatherSearch(city);
     $("#cityTextSearch").val("");
-})
+});
