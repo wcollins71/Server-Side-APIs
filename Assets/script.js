@@ -1,64 +1,94 @@
 $(document).ready(function () {
     console.clear();
     $("#mainPanel").hide();
+    $("#cityNotFound").hide();
     $("#cityTextSearch").focus().select();
 });
 
+var currentDate = ""
 
 function weatherSearch(city) {
     var queryURL = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=metric&appid=fa83f868b44583cfef9d1a24e9512db4";
     $.ajax({
         url: queryURL,
         method: "GET",
-        statusCode: {
+        statusCode: { // check if city search was successful, if not display an alert
             404: function () {
-                alert("City not found");
+                $("#cityNotFound").show();
             }
         }
     }).then(function (response) {
-        $("#cityAndDate").text(response.name + " " + new Date().toLocaleDateString("en-GB"));
+        $("#mainPanel").show();
+        // display city searched and current date
+        currentDate = new Date().toLocaleDateString("en-GB");
+        console.log("Current date" + currentDate);
+        $("#cityAndDate").text(response.name + " " + currentDate);
+        // get the weather icon and display in panel
         var currentWeatherCode = response.weather[0].icon;
         $("#currentWeatherIcon").attr("src", "https://openweathermap.org/img/wn/" + currentWeatherCode + ".png")
+        // get the current temp, truncate to one decimal point
         var currentTemp = response.main.temp;
         $("#currentTemp").text("Temperature: " + currentTemp.toFixed(1) + "°C");
+        // get the current humidity
         var currentHumidity = response.main.humidity;
         $("#currentHumidity").text("Humidity: " + currentHumidity + "%");
+        // get the current wind speed
         var currentWind = response.wind.speed;
         $("#currentWind").text("Wind Speed: " + currentWind + " km/h");
+        // get the longitude and latittude of the city chosen, required for UV lookup
         var lat = response.coord.lat;
         var lon = response.coord.lon;
+        // call the function to search for UV and 5 day forecast
         fiveDayandUVSearch(lon, lat);
+        // call the function to add city to list of previous searches
         addToCityList(response.name);
     });
 
 };
 
 function fiveDayandUVSearch(lon, lat) {
+    // use onecall paramater from api for UV and 5 day search
     var queryURL = "https://api.openweathermap.org/data/2.5/onecall?lon=" + lon + "&lat=" + lat + "&units=metric&exclude=hourly,minutely,alerts&appid=fa83f868b44583cfef9d1a24e9512db4";
-    console.log(queryURL);
     $.ajax({
         url: queryURL,
         method: "GET"
     }).then(function (response) {
-        console.log(response);
+        // get the current UV index
         var currentUV = response.current.uvi;
-        console.log(parseFloat(currentUV))
+        // determine categiry of UV index and assign colour coded background
         if (currentUV < 3) {
             $("#currentUV").attr("style", "background-color: green;")
-        } else if (currentUV >= 3 && currentUV < 6){
+        } else if (currentUV >= 3 && currentUV < 6) {
             $("#currentUV").attr("style", "background-color: yellow;")
-        } else if (currentUV >= 6 && currentUV < 8){
+        } else if (currentUV >= 6 && currentUV < 8) {
             $("#currentUV").attr("style", "background-color: orange;")
-        } else if (currentUV >= 8 && currentUV < 11){
+        } else if (currentUV >= 8 && currentUV < 11) {
             $("#currentUV").attr("style", "background-color: red;")
         } else {
             $("#currentUV").attr("style", "background-color: violet;")
         }
-
         $("#currentUV").text(currentUV);
+        // prepare for cards to show 5 day forecast
         const cardDeck = $(".card-deck");
         cardDeck.empty();
-        for (var i = 1; i < 6; i++) {
+
+        // This section was created as the dt time in the response was local time and would sometimes display starting day after tomorrow.
+        // Would occur when selecting a city in the USA due to the time difference here when it is in the evening here in Perth.
+        // Will check if the day 0 in the response is equal to today, then change the for loop to 1-6
+
+        var dayStart = 0
+        var dayFinish = 5
+        const timestampCheck = response.daily[0].dt;
+        const selectedDateCheck = new Date(timestampCheck * 1000).toLocaleDateString("en-GB");
+        console.log("Selected Date " + selectedDateCheck)
+        if (currentDate === selectedDateCheck) {
+            console.log("Equals");
+            dayStart = 1;
+            dayFinish = 6;
+        }
+
+        for (var i = dayStart; i < dayFinish; i++) {
+            // create cards and elements
             const card = $("<div>");
             card.attr("class", "card text-white bg-primary mb-1");
             card.attr("style", "padding-left: 5px;");
@@ -70,6 +100,7 @@ function fiveDayandUVSearch(lon, lat) {
 
             const h5El = $("<h5>");
             h5El.attr("class", "h5El");
+
             const timestamp = response.daily[i].dt;
             const selectedDate = new Date(timestamp * 1000).toLocaleDateString("en-GB");
             h5El.text(selectedDate);
@@ -90,6 +121,7 @@ function fiveDayandUVSearch(lon, lat) {
 function addToCityList(city) {
     const $buttonGroup = $("#btnGroup");
     const $button = $("<button>");
+    // check if city is already in list before adding to the list
     if (!$("button:contains('" + city + "')").length) {
         $button.attr("class", "btn btn-light btnCity");
         $button.attr("id", city);
@@ -103,27 +135,29 @@ function addToCityList(city) {
 }
 
 $("#btnSearch").on("click", function (event) {
+    // click event when search button is clicked
+    $("#cityNotFound").hide(); // hides the city not found alert if it is shown
     event.preventDefault();
-    $("#mainPanel").show();
     var city = $("#cityTextSearch").val();
-    console.log(city)
-    weatherSearch(city);
+    weatherSearch(city); // get the text of the search and call funtion to search for current weather
     $("#cityTextSearch").focus().select();
 });
 
 $("#cityTextSearch").on("keyup", function (e) {
+    // same as button click event that responds to enter button
+    $("#cityNotFound").hide();
     if (e.key == "Enter") {
         event.preventDefault();
-        $("#mainPanel").show();
         weatherSearch(e.target.value);
         $("#cityTextSearch").focus().select();
     }
 });
 
 $("#btnGroup").on("click", ".btnCity", function (event) {
+    // click event when a city previously searched is clicked in the list
+    $("#cityNotFound").hide();
     event.preventDefault();
     var city = $(this).text();
-    console.log(city)
     weatherSearch(city);
     $("#cityTextSearch").val("");
 })
