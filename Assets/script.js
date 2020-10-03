@@ -9,17 +9,20 @@ $(document).ready(function () {
 var currentDate = ""
 var citiesSearched = [];
 
-function loadCities() {
-    citiesSearched = JSON.parse(localStorage.getItem("city"));
-    console.log(citiesSearched);
-    for (var i = 0; i < citiesSearched.length; i++) {
-        const $buttonGroup = $("#btnGroup");
-        const $button = $("<button>");
-        $button.attr("class", "btn btn-light btnCity");
-        $button.text(citiesSearched[i]);
-        $buttonGroup.append($button);
+function loadCities() {  // load cities stored in local storage array
+    if (localStorage.getItem("city") !== null) {
+        citiesSearched = JSON.parse(localStorage.getItem("city"));
+        // check if key exist and then load buttons
+        for (var i = 0; i < citiesSearched.length; i++) {
+            const $buttonGroup = $("#btnGroup");
+            const $button = $("<button>");
+            $button.attr("class", "btn btn-light btnCity");
+            $button.text(citiesSearched[i]);
+            $buttonGroup.append($button);
+        };
     };
 };
+
 function weatherSearch(city) {
     var queryURL = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=metric&appid=fa83f868b44583cfef9d1a24e9512db4";
     $.ajax({
@@ -93,9 +96,7 @@ function fiveDayandUVSearch(lon, lat) {
         var dayFinish = 5
         const timestampCheck = response.daily[0].dt;
         const selectedDateCheck = new Date(timestampCheck * 1000).toLocaleDateString("en-GB");
-        console.log("Selected Date " + selectedDateCheck)
         if (currentDate === selectedDateCheck) {
-            console.log("Equals");
             dayStart = 1;
             dayFinish = 6;
         }
@@ -139,13 +140,13 @@ function addToCityList(city) {
         $button.attr("class", "btn btn-light btnCity");
         $button.text(city);
         $buttonGroup.append($button);
-        citiesSearched.push(city);
+        if (citiesSearched.length === 0) {
+            citiesSearched[0] = city
+        } else {
+            citiesSearched.push(city);
+        };
         localStorage.setItem("city", JSON.stringify(citiesSearched));
-    } else {
-
-    }
-
-
+    };
 }
 
 $("#btnSearch").on("click", function (event) {
