@@ -37,7 +37,6 @@ function weatherSearch(city) {
         $("#mainPanel").show();
         // display city searched and current date
         currentDate = new Date().toLocaleDateString("en-GB");
-        console.log("Current date" + currentDate);
         $("#cityAndDate").text(response.name + " " + currentDate);
         // get the weather icon and display in panel
         var currentWeatherCode = response.weather[0].icon;
